@@ -2,39 +2,41 @@ name: Deploy SkySoft Website
 
 on:
   push:
-    branches: ["main"]
+    branches: [ "main" ]   # Deploy only when pushing to main branch
 
 jobs:
-  build-deploy:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Build Docker image
-        run: docker build -t skysoft-website .
-
-      - name: Save Docker image
-        run: docker save skysoft-website | gzip > skysoft-website.tar.gz
-
-      - name: Copy image to EC2
-        uses: appleboy/scp-action@v0.1.7
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.8.0
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_KEY }}
-          source: "skysoft-website.tar.gz"
-          target: "~/"
+          ssh-private-key: ${{ secrets.EC2_KEY }}
 
-      - name: Deploy on EC2
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_KEY }}
-          script: |
-            docker load < skysoft-website.tar.gz
+      - name: Deploy to EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+            # Navigate or create app folder
+            mkdir -p ~/skysoft-website
+            cd ~/skysoft-website
+
+            # Stop old container
             docker stop skysoft || true
             docker rm skysoft || true
-            docker run -d --name skysoft -p 80:80 skysoft-website
+
+            # Remove old image
+            docker rmi skysoft-website || true
+
+            # Get latest code from GitHub
+            git clone https://github.com/${{ github.repository }} repo || true
+            cd repo
+            git pull origin main
+
+            # Build and run docker
+            docker build -t skysoft-website .
+            docker run -d -p 80:80 --name skysoft skysoft-website
+          EOF
