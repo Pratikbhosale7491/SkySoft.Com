@@ -1,0 +1,40 @@
+name: Deploy SkySoft Website
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Build Docker image
+        run: docker build -t skysoft-website .
+
+      - name: Save Docker image
+        run: docker save skysoft-website | gzip > skysoft-website.tar.gz
+
+      - name: Copy image to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_KEY }}
+          source: "skysoft-website.tar.gz"
+          target: "~/"
+
+      - name: Deploy on EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_KEY }}
+          script: |
+            docker load < skysoft-website.tar.gz
+            docker stop skysoft || true
+            docker rm skysoft || true
+            docker run -d --name skysoft -p 80:80 skysoft-website
