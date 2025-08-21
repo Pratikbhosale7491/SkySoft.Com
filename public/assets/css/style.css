@@ -1,0 +1,25 @@
+body {
+  font-family: Arial, sans-serif;
+}
+h1, h2, h5 {
+  font-weight: 700;
+}
+.card {
+  border: 0;
+  transition: transform 0.2s ease-in-out;
+}
+.card:hover {
+  transform: translateY(-5px);
+}
+
+/* Contact form styling */
+#contactForm input,
+#contactForm textarea {
+  border-radius: 8px;
+  padding: 10px;
+}
+
+#contactForm button {
+  border-radius: 8px;
+  padding: 10px 20px;
+}
