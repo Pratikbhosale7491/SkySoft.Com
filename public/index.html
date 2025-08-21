@@ -85,7 +85,39 @@
     </div>
   </section>
 
-  
+  <!-- Contact -->
+  <form id="contactForm">
+  <input type="text" name="name" placeholder="Your Name" required />
+  <input type="email" name="email" placeholder="Your Email" required />
+  <textarea name="message" placeholder="Your Message" required></textarea>
+  <button type="submit">Send</button>
+</form>
+
+<p id="formResponse"></p>
+
+<script>
+document.getElementById("contactForm").addEventListener("submit", async function(e) {
+  e.preventDefault();
+
+  const formData = {
+    name: this.name.value,
+    email: this.email.value,
+    message: this.message.value
+  };
+
+  const response = await fetch("/contact", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(formData)
+  });
+
+  const result = await response.json();
+  document.getElementById("formResponse").innerText = result.message;
+  this.reset();
+});
+</script>
+
+
   <!-- Footer -->
   <footer class="bg-dark text-white text-center p-3">
     <p class="mb-0">© 2025 SkySoft. All Rights Reserved.</p>
