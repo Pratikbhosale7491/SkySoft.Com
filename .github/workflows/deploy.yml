@@ -40,6 +40,6 @@ jobs:
               -p 80:80 \
               -e DB_HOST=${{ secrets.DB_HOST }} \
               -e DB_USER=${{ secrets.DB_USER }} \
-              -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
+              -e DB_PASS=${{ secrets.DB_PASS }} \
               -e DB_NAME=${{ secrets.DB_NAME }} \
               pratik7491/skysoft-website:latest
