@@ -1,19 +1,18 @@
 # -----------------------------
-# Stage 1: Build static files (if using bundlers later, e.g., React/Next)
-# For now, we just use Node.js to serve Express backend + static frontend
+# Stage 1: Build Express backend + static frontend
 # -----------------------------
 FROM node:18-alpine
 
 # Set working directory
 WORKDIR /app
 
-# Copy package.json & package-lock.json first (for better caching)
+# Copy package.json & package-lock.json first
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install --only=production
+# Install all dependencies (including pg for DB connection)
+RUN npm install --production
 
-# Copy source code (server.js, public, assets, etc.)
+# Copy source code
 COPY . .
 
 # Expose application port
@@ -22,5 +21,5 @@ EXPOSE 80
 # Set environment variable for Node.js port
 ENV PORT=80
 
-# Start Node.js server
+# Start the server
 CMD ["node", "server.js"]
